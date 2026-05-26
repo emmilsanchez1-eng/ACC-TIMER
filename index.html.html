@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATC Timer</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111111">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        /* Base Styling */
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
+
+        /* The Clock Hardware Casing */
+        .hardware-casing {
+            background-color: #050505;
+            padding: 30px 50px;
+            border-radius: 8px;
+            border: 4px solid #222;
+            box-shadow: inset 0 0 20px #000, 0 10px 30px rgba(0,0,0,0.8);
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        /* Main Hardware Title */
+        .main-title {
+            color: #444;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 6px;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Top Labels (HOURS MINUTES SECONDS) */
+        .labels {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            color: #888;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        /* LED Digit Styling */
+        .led-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 8rem;
+            font-weight: 900;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #aa0000;
+            letter-spacing: 5px;
+            background-color: #0a0000;
+            border-radius: 5px;
+            padding: 10px 20px;
+            border: 1px solid #1a0000;
+        }
+
+        .colon {
+            margin: 0 10px;
+            opacity: 0.9;
+            padding-bottom: 20px;
+        }
+
+        /* Control Panels */
+        .control-panel {
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 700px;
+            margin-bottom: 15px;
+        }
+
+        .panel-title {
+            color: #777;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Adjust Buttons Grid */
+        .adjust-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Playback Buttons Layout */
+        .playback-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Button Styling */
+        button {
+            background-color: #2a2a2a;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 12px 5px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:hover {
+            background-color: #444;
+            color: #fff;
+            border-color: #666;
+        }
+
+        /* Specific Button Accents */
+        .btn-plus { border-top: 2px solid #00aa00; }
+        .btn-minus { border-bottom: 2px solid #aa0000; }
+        
+        .btn-playback {
+            padding: 15px 10px; 
+            font-size: 1rem;
+            flex-grow: 1;
+        }
+
+        .active-play {
+            background-color: #004400;
+            color: #00ff00;
+            border-color: #00aa00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+        
+        .active-stop {
+            background-color: #440000;
+            color: #ff3333;
+            border-color: #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+        }
+
+        .active-fw {
+            background-color: #442200;
+            color: #ffaa00;
+            border-color: #ff8800;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hardware-casing">
+        <div class="main-title">ATC TIMER</div>
+        <div class="labels">
+            <span>HOURS</span>
+            <span>MINUTES</span>
+            <span>SECONDS</span>
+        </div>
+        <div class="led-display">
+            <span id="disp-hrs">00</span>
+            <span class="colon">:</span>
+            <span id="disp-mins">00</span>
+            <span class="colon">:</span>
+            <span id="disp-secs">00</span>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="panel-title">Master Playback Controls</div>
+        <div class="playback-row">
+            <button id="btn-stop" class="btn-playback active-stop" onclick="setSpeed(0)">⏹ STOP</button>
+            <button id="btn-play" class="btn-playback" onclick="setSpeed(1)">▶ PLAY</button>
+            <button id="btn-fwd2" class="btn-playback" onclick="setSpeed(2)">⏩ x2</button>
+            <button id="btn-fwd5" class="btn-playback" onclick="setSpeed(5)">⏩ x5</button>
+            <button id="btn-fwd10" class="btn-playback" onclick="setSpeed(10)">⏭ x10</button>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="panel-title">Manual Timeline Adjustment (Unified Pipeline)</div>
+        
+        <div class="adjust-grid">
+            <button class="btn-plus" onclick="adjustTime(3600)">+ 1 HR</button>
+            <button class="btn-plus" onclick="adjustTime(1200)">+ 20 MIN</button>
+            <button class="btn-plus" onclick="adjustTime(600)">+ 10 MIN</button>
+            <button class="btn-plus" onclick="adjustTime(300)">+ 5 MIN</button>
+            <button class="btn-plus" onclick="adjustTime(60)">+ 1 MIN</button>
+            <button class="btn-plus" onclick="adjustTime(10)">+ 10 SEC</button>
+        </div>
+
+        <div class="adjust-grid">
+            <button class="btn-minus" onclick="adjustTime(-3600)">- 1 HR</button>
+            <button class="btn-minus" onclick="adjustTime(-1200)">- 20 MIN</button>
+            <button class="btn-minus" onclick="adjustTime(-600)">- 10 MIN</button>
+            <button class="btn-minus" onclick="adjustTime(-300)">- 5 MIN</button>
+            <button class="btn-minus" onclick="adjustTime(-60)">- 1 MIN</button>
+            <button class="btn-minus" onclick="adjustTime(-10)">- 10 SEC</button>
+        </div>
+    </div>
+
+    <script>
+        // Start the clock at 09:59:59
+        let totalSeconds = 35999; 
+        
+        let intervalId = null;
+        let currentSpeed = 0; // 0 = stop
+
+        // Mathematically convert total seconds and update the HTML
+        function updateDisplay() {
+            if (totalSeconds < 0) totalSeconds = 86400 + (totalSeconds % 86400);
+            totalSeconds = totalSeconds % 86400;
+
+            let h = Math.floor(totalSeconds / 3600);
+            let m = Math.floor((totalSeconds % 3600) / 60);
+            let s = totalSeconds % 60;
+
+            document.getElementById('disp-hrs').innerText = String(h).padStart(2, '0');
+            document.getElementById('disp-mins').innerText = String(m).padStart(2, '0');
+            document.getElementById('disp-secs').innerText = String(s).padStart(2, '0');
+        }
+
+        // Adjust time by specific amounts (buttons)
+        function adjustTime(secondsToChange) {
+            totalSeconds += secondsToChange;
+            updateDisplay();
+        }
+
+        // Handle Play, Stop, and Forward speeds
+        function setSpeed(speedMultiplier) {
+            currentSpeed = speedMultiplier;
+            clearInterval(intervalId); // Stop any existing loop
+            
+            // Clear all active button highlights
+            document.getElementById('btn-stop').classList.remove('active-stop');
+            document.getElementById('btn-play').classList.remove('active-play');
+            document.getElementById('btn-fwd2').classList.remove('active-fw');
+            document.getElementById('btn-fwd5').classList.remove('active-fw');
+            document.getElementById('btn-fwd10').classList.remove('active-fw');
+            
+            // Apply correct highlight and start the engine
+            if (currentSpeed === 0) {
+                document.getElementById('btn-stop').classList.add('active-stop');
+            } else {
+                if (currentSpeed === 1) document.getElementById('btn-play').classList.add('active-play');
+                if (currentSpeed === 2) document.getElementById('btn-fwd2').classList.add('active-fw');
+                if (currentSpeed === 5) document.getElementById('btn-fwd5').classList.add('active-fw');
+                if (currentSpeed === 10) document.getElementById('btn-fwd10').classList.add('active-fw');
+                
+                // Tick once every 1 second (1000ms), adding the speed multiplier
+                intervalId = setInterval(() => {
+                    adjustTime(currentSpeed);
+                }, 1000);
+            }
+        }
+
+        // Run once on load to show the initial numbers
+        updateDisplay();
+
+        // Register the Service Worker for offline capability
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered successfully');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
